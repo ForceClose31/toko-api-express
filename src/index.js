@@ -1,5 +1,6 @@
 const express = require('express');
 const usersRoute = require('./routes/users')
+const logUserRequest = require('./middleware/logs')
 const app = express();
 
 // basic route
@@ -10,15 +11,17 @@ const app = express();
 //     res.send('Hello World')
 // })
 
-app.use('/', usersRoute)
+app.use(logUserRequest);
+
+app.use('/', usersRoute);
 
 app.get('/home', (req, res) => {
     res.send('ini get method');
-})
+});
 
 app.post('/login', (req, res) => {
     res.send('ini get method');
-})
+});
 
 // respon json
 app.get('/home', (req, res) => {
@@ -26,8 +29,8 @@ app.get('/home', (req, res) => {
         'name' : 'Nur Bashori',
         'umur' : 23
     });
-})
+});
 
 app.listen(4000, () => {
     console.log('Server success running');
-})
+});
