@@ -1,36 +1,22 @@
-const express = require('express');
-const usersRoute = require('./routes/users')
-const logUserRequest = require('./middleware/logs')
+const express = require("express");
+const { connectDB, sequelize } = require("./config/db");
+const usersRoute = require("./routes/users");
+const logUserRequest = require("./middleware/logs");
+const bodyParser = require("body-parser");
+
 const app = express();
 
-// basic route
-// app.method(path, handler);
+connectDB();
 
-// use biasanya digunakan untuk middleware
-// app.use('/', (req, res, next) => {
-//     res.send('Hello World')
-// })
-
+app.use(bodyParser.json());
 app.use(logUserRequest);
 
-app.use('/', usersRoute);
+app.use("/api/users", usersRoute);
 
-app.get('/home', (req, res) => {
-    res.send('ini get method');
-});
-
-app.post('/login', (req, res) => {
-    res.send('ini get method');
-});
-
-// respon json
-app.get('/home', (req, res) => {
-    res.json({ 
-        'name' : 'Nur Bashori',
-        'umur' : 23
-    });
+sequelize.sync({ force: false }).then(() => {
+  console.log("Database & tables created!");
 });
 
 app.listen(4000, () => {
-    console.log('Server success running');
+  console.log("Server running on port 4000");
 });
