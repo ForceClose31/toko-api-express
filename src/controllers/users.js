@@ -1,19 +1,32 @@
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
+const User = require('../models/user');
+const Store = require('../models/store');
+const jwt = require('jsonwebtoken');
+require('dotenv').config(); 
+
+const jwtSecret = process.env.JWT_SECRET;
 
 const registerUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role, storeName, storeDescription } = req.body;
 
   try {
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    const newUser = await User.create({ username, password });
-    res.status(201).json({ message: "User registered successfully" });
+    const newUser = await User.create({ username, password, role });
+
+    if (role === 'admin' && storeName) {
+      await Store.create({
+        name: storeName,
+        description: storeDescription,
+        adminId: newUser.id,
+      });
+    }
+
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
@@ -23,21 +36,21 @@ const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ where: { username } });
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id }, "your_jwt_secret", {
-      expiresIn: "1h",
+    const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, {
+      expiresIn: '1h',
     });
 
-    res.json({ token });
+    res.json({ token, role: user.role });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
