@@ -1,33 +1,40 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./user');
 const Product = require('./product');
+const User = require('./user');
 
 const Transaction = sequelize.define('Transaction', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id',
     },
-    userId: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: User,
-            key: 'id'
-        }
+  },
+  productId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Products',
+      key: 'id',
     },
-    status: {
-        type: DataTypes.ENUM('pending', 'accepted', 'rejected', 'shipped'),
-        defaultValue: 'pending'
-    },
-    paymentStatus: {
-        type: DataTypes.ENUM('pending', 'paid'),
-        defaultValue: 'pending'
-    },
-    totalAmount: {
-        type: DataTypes.FLOAT,
-        allowNull: false
-    }
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  totalPrice: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'accepted', 'shipped', 'paid'),
+    defaultValue: 'pending',
+  },
 });
+
+Transaction.belongsTo(User, { foreignKey: 'userId' });
+Transaction.belongsTo(Product, { foreignKey: 'productId' });
 
 module.exports = Transaction;
