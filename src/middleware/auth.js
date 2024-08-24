@@ -15,7 +15,7 @@ const authenticateToken = (req, res, next) => {
     try {
       const user = await User.findByPk(decoded.userId);
       if (!user) return res.sendStatus(403);
-      
+
       req.user = user;
       next();
     } catch (err) {
@@ -25,10 +25,15 @@ const authenticateToken = (req, res, next) => {
 };
 
 const authorizeAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Access denied' });
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
-  next();
 };
 
 module.exports = {
