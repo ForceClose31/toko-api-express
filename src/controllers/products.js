@@ -11,6 +11,20 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ message: 'Admin does not have a store' });
     }
 
+    if (promotionStartDate && promotionEndDate) {
+      const startDate = new Date(promotionStartDate);
+      const endDate = new Date(promotionEndDate);
+      const currentDate = new Date();
+
+      if (startDate >= endDate) {
+        return res.status(400).json({ message: 'promotionStartDate must be before promotionEndDate' });
+      }
+
+      if (startDate < currentDate || endDate < currentDate) {
+        return res.status(400).json({ message: 'Promotion dates must be in the future' });
+      }
+    }
+
     const newProduct = await Product.create({
       name,
       price,
@@ -40,6 +54,20 @@ const updateProduct = async (req, res) => {
     const store = await Store.findOne({ where: { adminId: req.user.id } });
     if (!store || product.storeId !== store.id) {
       return res.status(403).json({ message: 'Unauthorized to update this product' });
+    }
+
+    if (promotionStartDate && promotionEndDate) {
+      const startDate = new Date(promotionStartDate);
+      const endDate = new Date(promotionEndDate);
+      const currentDate = new Date();
+
+      if (startDate >= endDate) {
+        return res.status(400).json({ message: 'promotionStartDate must be before promotionEndDate' });
+      }
+
+      if (startDate < currentDate || endDate < currentDate) {
+        return res.status(400).json({ message: 'Promotion dates must be in the future' });
+      }
     }
 
     product.name = name || product.name;
