@@ -153,6 +153,75 @@ const getPromotionalProducts = async (req, res) => {
   }
 };
 
+const getDiscountedProducts = async (req, res) => {
+  try {
+    const discountedProducts = await Product.findAll({
+      where: {
+        discount: {
+          [Op.gt]: 0, // Products with a discount greater than 0
+        },
+      },
+    });
+
+    res.status(200).json(discountedProducts);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+const addDiscount = async (req, res) => {
+  const { id } = req.params;
+  const { discount } = req.body;
+
+  try {
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const store = await Store.findOne({ where: { adminId: req.user.id } });
+    if (!store || product.storeId !== store.id) {
+      return res.status(403).json({ message: 'Unauthorized to add discount to this product' });
+    }
+
+    if (discount < 0 || discount > 100) {
+      return res.status(400).json({ message: 'Discount must be between 0 and 100%' });
+    }
+
+    product.discount = discount;
+    await product.save();
+
+    res.status(200).json({ message: 'Discount added successfully', product });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+const removeDiscount = async (req, res) => {
+  const { id } = req.params; 
+
+  try {
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const store = await Store.findOne({ where: { adminId: req.user.id } });
+    if (!store || product.storeId !== store.id) {
+      return res.status(403).json({ message: 'Unauthorized to remove discount from this product' });
+    }
+
+    product.discount = 0;
+    await product.save();
+
+    res.status(200).json({ message: 'Discount removed successfully', product });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 module.exports = {
   addProduct,
   updateProduct,
@@ -160,4 +229,7 @@ module.exports = {
   getAllProducts,
   getProductById,
   getPromotionalProducts,
+  getDiscountedProducts, 
+  addDiscount, 
+  removeDiscount, 
 };

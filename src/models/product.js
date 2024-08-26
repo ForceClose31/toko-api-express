@@ -18,6 +18,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  discount: {
+    type: DataTypes.FLOAT, 
+    allowNull: true,
+  },
   promotionStartDate: {
     type: DataTypes.DATE,
     allowNull: true,

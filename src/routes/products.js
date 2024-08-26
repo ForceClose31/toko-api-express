@@ -9,5 +9,7 @@ router.delete('/delete/:id', authenticateToken, authorizeAdmin, productControlle
 router.get('/all', authenticateToken, productController.getAllProducts);
 router.get('/:id', authenticateToken, productController.getProductById);
 router.get('/promotions', authenticateToken, productController.getPromotionalProducts);
+router.post('/discount/:id', authenticateToken, authorizeAdmin, productController.addDiscount);
+router.delete('/discount/:id', authenticateToken, authorizeAdmin, productController.removeDiscount);
 
 module.exports = router;
