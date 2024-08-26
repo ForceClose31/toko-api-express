@@ -1,8 +1,9 @@
 const Product = require('../models/product');
 const Store = require('../models/store');
+const { Op } = require('sequelize');
 
 const addProduct = async (req, res) => {
-  const { name, price, stock, description } = req.body;
+  const { name, price, stock, description, promotionStartDate, promotionEndDate } = req.body;
 
   try {
     const store = await Store.findOne({ where: { adminId: req.user.id } });
@@ -16,6 +17,8 @@ const addProduct = async (req, res) => {
       stock,
       description,
       storeId: store.id,
+      promotionStartDate: promotionStartDate ? new Date(promotionStartDate) : null,
+      promotionEndDate: promotionEndDate ? new Date(promotionEndDate) : null,
     });
 
     res.status(200).json(newProduct);
@@ -26,7 +29,7 @@ const addProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock, description } = req.body;
+  const { name, price, stock, description, promotionStartDate, promotionEndDate } = req.body;
 
   try {
     const product = await Product.findByPk(id);
@@ -43,6 +46,9 @@ const updateProduct = async (req, res) => {
     product.price = price || product.price;
     product.stock = stock || product.stock;
     product.description = description || product.description;
+    product.promotionStartDate = promotionStartDate ? new Date(promotionStartDate) : product.promotionStartDate;
+    product.promotionEndDate = promotionEndDate ? new Date(promotionEndDate) : product.promotionEndDate;
+
 
     await product.save();
 
@@ -98,10 +104,32 @@ const getProductById = async (req, res) => {
   }
 };
 
+const getPromotionalProducts = async (req, res) => {
+  const currentDate = new Date();
+
+  try {
+    const promotionalProducts = await Product.findAll({
+      where: {
+        promotionStartDate: {
+          [Op.lte]: currentDate, 
+        },
+        promotionEndDate: {
+          [Op.gte]: currentDate, 
+        },
+      },
+    });
+
+    res.status(200).json({ promotionalProducts });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 module.exports = {
   addProduct,
   updateProduct,
   deleteProduct,
   getAllProducts,
   getProductById,
+  getPromotionalProducts,
 };

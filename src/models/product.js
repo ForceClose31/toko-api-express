@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
-const Store = require('./store');
+const sequelize = require('../config/database');
 
 const Product = sequelize.define('Product', {
   name: {
@@ -14,17 +13,21 @@ const Product = sequelize.define('Product', {
   stock: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 0,
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
-});
-
-Product.belongsTo(Store, {
-  foreignKey: 'storeId',
-  as: 'store',
+  promotionStartDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  promotionEndDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+}, {
+  timestamps: true,
 });
 
 module.exports = Product;
