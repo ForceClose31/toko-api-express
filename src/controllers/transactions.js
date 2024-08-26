@@ -70,7 +70,6 @@ const makePayment = async (req, res) => {
   }
 };
 
-// Admin Mark as Shipped
 const markAsShipped = async (req, res) => {
   const { id } = req.params;
 
@@ -93,9 +92,31 @@ const markAsShipped = async (req, res) => {
   }
 };
 
+const getTransactionHistory = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const transactions = await Transaction.findAll({
+      where: { userId },
+      include: [
+        {
+          model: Product,
+          attributes: ['name', 'price'], 
+        }
+      ],
+      order: [['createdAt', 'DESC']] 
+    });
+
+    res.status(200).json({ transactions });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 module.exports = {
   checkout,
   acceptTransaction,
   makePayment,
   markAsShipped,
+  getTransactionHistory,
 };

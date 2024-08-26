@@ -32,6 +32,8 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.ENUM('pending', 'accepted', 'shipped', 'paid'),
     defaultValue: 'pending',
   },
+}, {
+  timestamps: true, 
 });
 
 Transaction.belongsTo(User, { foreignKey: 'userId' });
